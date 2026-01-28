@@ -111,17 +111,8 @@ services:
             - simplelogin-network
 
     simpleloginpostfix:
-        image: simplelogin/postfix:sha-a683dce
+        image: simplelogin/postfix:latest
         container_name: SimpleLoginPostfix
-        entrypoint: bash
-        command:
-            - -c
-            - |
-              /src/docker-entrypoint.sh &
-              while ! netstat -tnl | grep -q ':25'; do sleep 1; done
-              sed -i '/# TLS parameters for SMPTD (incoming mail)/{n;s/smtp_tls_security_level/smtpd_tls_security_level/}' /etc/postfix/main.cf
-              postfix reload
-              wait
         env_file: .env
         environment:
             - ALIASES_DEFAULT_DOMAIN=${ALIASES_DEFAULT_DOMAIN}
@@ -152,6 +143,49 @@ services:
         restart: always
         networks:
             - simplelogin-network
+
+    #simpleloginpostfix:
+        #image: simplelogin/postfix:sha-a683dce
+        #container_name: SimpleLoginPostfix
+        #entrypoint: bash
+        #command:
+        #    - -c
+        #    - |
+        #      /src/docker-entrypoint.sh &
+        #      while ! netstat -tnl | grep -q ':25'; do sleep 1; done
+        #      sed -i '/# TLS parameters for SMPTD (incoming mail)/{n;s/smtp_tls_security_level/smtpd_tls_security_level/}' /etc/postfix/main.cf
+        #      postfix reload
+        #      wait
+        #env_file: .env
+        #environment:
+        #    - ALIASES_DEFAULT_DOMAIN=${ALIASES_DEFAULT_DOMAIN}
+        #    - DB_HOST=simpleloginpostgres:${POSTGRES_PORT}
+        #    - DB_USER=${POSTGRES_USER}
+        #    - DB_PASSWORD=${POSTGRES_PASSWORD}
+        #    - DB_NAME=${POSTGRES_DB}
+        #    - EMAIL_HANDLER_HOST=simplelogin
+        #    - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+        #    - POSTFIX_FQDN=${POSTFIX_FQDN}
+        #    - SIMPLELOGIN_COMPATIBILITY_MODE=v4
+        #    - RELAY_HOST=${RELAY_HOST}
+        #    - RELAY_PORT=${RELAY_PORT}
+        #    - RELAY_HOST_USERNAME=${RELAY_HOST_USERNAME}
+        #    - RELAY_HOST_PASSWORD=${RELAY_HOST_PASSWORD}
+        #dns:
+        #    - 8.8.8.8
+        #    - 8.8.4.4
+        #volumes:
+        #    - simplelogin-postfix_data:/etc/postfix
+        #    - simplelogin-letsencrypt_data:/etc/letsencrypt
+        #ports:
+        #    - 25:25
+        #    - 587:587
+        #depends_on:
+        #    simplelogin:
+        #        condition: service_started
+        #restart: always
+        #networks:
+        #    - simplelogin-network
 
 networks:
   simplelogin-network:
