@@ -1,0 +1,159 @@
+volumes:
+  simplelogin-postgres_data:
+    name: simplelogin-postgres_data
+  simplelogin_data:
+    name: simplelogin_data
+  simplelogin-pgp_data:
+    name: simplelogin-pgp_data
+  simplelogin-upload_data:
+    name: simplelogin-upload_data
+  simplelogin-postfix_data:
+    name: simplelogin-postfix_data
+  simplelogin-letsencrypt_data:
+    name: simplelogin-letsencrypt_data
+
+services:
+    simpleloginpostgres:
+        image: postgres:12.1
+        container_name: SimpleLoginPostgres
+        entrypoint: bash
+        command:
+          - -c
+          - |
+            /docker-entrypoint.sh postgres -c port=${POSTGRES_PORT} &
+            until pg_isready -U ${POSTGRES_USER} -p ${POSTGRES_PORT} >/dev/null 2>&1; do
+              sleep 10
+            done
+            psql -U ${POSTGRES_USER} -d ${POSTGRES_DB} -p ${POSTGRES_PORT} -c "
+              DO \$$outer\$$
+              BEGIN
+                  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'public_domain') THEN
+                      DROP TRIGGER IF EXISTS clear_public_domain_trigger ON public_domain;
+                      CREATE OR REPLACE FUNCTION clear_public_domain()
+                      RETURNS TRIGGER AS \$$func\$$
+                      BEGIN
+                          DELETE FROM public_domain;
+                          RETURN NULL;
+                      END;
+                      \$$func\$$ LANGUAGE plpgsql;
+                      CREATE TRIGGER clear_public_domain_trigger
+                      AFTER INSERT ON public_domain
+                      FOR EACH STATEMENT
+                      EXECUTE FUNCTION clear_public_domain();
+                      DELETE FROM public_domain;
+                  END IF;
+              END
+              \$$outer\$$;
+            "
+            wait
+        env_file: .env
+        environment:
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_DB=${POSTGRES_DB}
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER} -p $${POSTGRES_PORT} && psql -U $${POSTGRES_USER} -d $${POSTGRES_DB} -p $${POSTGRES_PORT} -c 'SELECT 1'"]
+            interval: 10s
+            timeout: 10s
+            retries: 5
+            start_period: 30s
+        volumes:
+            - simplelogin-postgres_data:/var/lib/postgresql/data
+        ports:
+            - 5433:5433
+        restart: always
+        networks:
+            - simplelogin-network
+
+    simplelogin:
+        image: simplelogin/app-ci:master
+        container_name: SimpleLogin
+        env_file: .env
+        environment:
+            - URL=${URL}
+            - EMAIL_DOMAIN=${EMAIL_DOMAIN}
+            - OTHER_ALIAS_DOMAINS=${OTHER_ALIAS_DOMAINS}
+            - FIRST_ALIAS_DOMAIN=${FIRST_ALIAS_DOMAIN}
+            - ALIAS_LIMIT="9999/minute"
+            - SUPPORT_EMAIL=${SUPPORT_EMAIL}
+            - EMAIL_SERVERS_WITH_PRIORITY=${EMAIL_SERVERS_WITH_PRIORITY}
+            - DISABLE_ALIAS_SUFFIX=1
+            - DB_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@simpleloginpostgres:${POSTGRES_PORT}/${POSTGRES_DB}
+            - GNUPGHOME=/sl/pgp
+            - LOCAL_FILE_UPLOAD=1
+            - POSTFIX_SERVER=simpleloginpostfix
+            - DKIM_PRIVATE_KEY_PATH=/dkim.key
+            - FLASK_SECRET=${FLASK_SECRET}
+            # Comment the two environment variables below to enable registration; Uncomment to disable registration.
+            - DISABLE_REGISTRATION=1
+            - DISABLE_ONBOARDING=true
+        volumes:
+            - simplelogin_data:/sl
+            - simplelogin-pgp_data:/sl/pgp
+            - simplelogin-upload_data:/code/static/upload
+            - /root/dkim.key:/dkim.key
+        ports:
+            - 7777:7777
+            - 20381:20381
+        depends_on:
+            simpleloginpostgres:
+                condition: service_healthy
+        restart: always
+        command: >
+          bash -c "
+            alembic upgrade head > /sl/migration.log 2>&1 &&
+            python init_app.py > /sl/init.log 2>&1 &&
+            python job_runner.py > /sl/job_runner.log 2>&1 & 
+            python email_handler.py > /sl/email_handler.log 2>&1 &
+            gunicorn wsgi:app -b 0.0.0.0:7777 -w 2 --timeout 60
+            "
+        networks:
+            - simplelogin-network
+
+    simpleloginpostfix:
+        image: simplelogin/postfix:sha-a683dce
+        container_name: SimpleLoginPostfix
+        entrypoint: bash
+        command:
+            - -c
+            - |
+              /src/docker-entrypoint.sh &
+              while ! netstat -tnl | grep -q ':25'; do sleep 1; done
+              sed -i '/# TLS parameters for SMPTD (incoming mail)/{n;s/smtp_tls_security_level/smtpd_tls_security_level/}' /etc/postfix/main.cf
+              postfix reload
+              wait
+        env_file: .env
+        environment:
+            - ALIASES_DEFAULT_DOMAIN=${ALIASES_DEFAULT_DOMAIN}
+            - DB_HOST=simpleloginpostgres:${POSTGRES_PORT}
+            - DB_USER=${POSTGRES_USER}
+            - DB_PASSWORD=${POSTGRES_PASSWORD}
+            - DB_NAME=${POSTGRES_DB}
+            - EMAIL_HANDLER_HOST=simplelogin
+            - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+            - POSTFIX_FQDN=${POSTFIX_FQDN}
+            - SIMPLELOGIN_COMPATIBILITY_MODE=v4
+            - RELAY_HOST=${RELAY_HOST}
+            - RELAY_PORT=${RELAY_PORT}
+            - RELAY_HOST_USERNAME=${RELAY_HOST_USERNAME}
+            - RELAY_HOST_PASSWORD=${RELAY_HOST_PASSWORD}
+        dns:
+            - 8.8.8.8
+            - 8.8.4.4
+        volumes:
+            - simplelogin-postfix_data:/etc/postfix
+            - simplelogin-letsencrypt_data:/etc/letsencrypt
+        ports:
+            - 25:25
+            - 587:587
+        depends_on:
+            simplelogin:
+                condition: service_started
+        restart: always
+        networks:
+            - simplelogin-network
+
+networks:
+  simplelogin-network:
+    external: true
+    name: simplelogin-network
