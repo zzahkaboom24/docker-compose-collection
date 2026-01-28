@@ -1,0 +1,26 @@
+volumes:
+  nginxproxymanager_data:
+    name: nginxproxymanager_data
+  nginxproxymanager-snippets_data:
+    name: nginxproxymanager-snippets_data
+  nginxproxymanager-letsencrypt_data:
+    name: nginxproxymanager-letsencrypt_data
+
+services:
+  nginxproxymanager:
+    container_name: NGINXProxyManager
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: always
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - nginxproxymanager_data:/data
+      - nginxproxymanager-letsencrypt_data:/etc/letsencrypt
+      - nginxproxymanager-snippets_data:/snippets
+    environment:
+      TZ: 'Europe/Berlin'
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
