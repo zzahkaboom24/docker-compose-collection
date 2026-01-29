@@ -1,5 +1,5 @@
 ## List of services available:
-<img src="https://img.shields.io/badge/Availables:_96-%2354B848.svg?style=for-the-badge&logo=cachet&logoColor=white">
+<img src="https://img.shields.io/badge/Availables:_2-%2354B848.svg?style=for-the-badge&logo=cachet&logoColor=white">
 
 | Status | Service | Website | Update | Maintainer |
 |:--:|--|--|--|--|
