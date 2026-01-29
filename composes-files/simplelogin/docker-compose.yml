@@ -189,5 +189,4 @@ services:
 
 networks:
   simplelogin-network:
-    external: true
     name: simplelogin-network
