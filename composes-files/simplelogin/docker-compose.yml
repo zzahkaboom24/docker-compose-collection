@@ -91,7 +91,7 @@ services:
             - simplelogin_data:/sl
             - simplelogin-pgp_data:/sl/pgp
             - simplelogin-upload_data:/code/static/upload
-            - /root/dkim.key:/dkim.key
+            - /dkim.key:/dkim.key:ro
         ports:
             - 7777:7777
             - 20381:20381
