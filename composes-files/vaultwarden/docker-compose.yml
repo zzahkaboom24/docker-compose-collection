@@ -1,0 +1,17 @@
+volumes:
+  vaultwarden_data:
+    name: vaultwarden_data
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: Vaultwarden
+    restart: always
+    environment:
+      DOMAIN: "https://vaultwarden.yourdomain.tld"
+      # Run `/vaultwarden hash` in the container's terminal to generate the ADMIN_TOKEN
+      # ADMIN_TOKEN: '$argon2id$v=19$m=65540,t=3,p=4$jimQKAHoZTYHF4vfsAf4TvpwEBgpOBk4CgJceUBfN1s$P6FWUAY9792IzNd/cGuvxQFzreBLtn3M6b+gcARAi2Q'
+    volumes:
+      - vaultwarden_data:/data/
+    ports:
+      - 8000:80
