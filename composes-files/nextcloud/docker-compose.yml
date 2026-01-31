@@ -13,8 +13,6 @@ services:
     container_name: NextcloudMariaDB
     image: mariadb:11.4
     restart: always
-    labels:
-      - wud.watch=false
     command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --innodb-file-per-table=1 --skip-innodb-read-only-compressed
     volumes:
       - nextcloud-mariadb_data:/var/lib/mysql
