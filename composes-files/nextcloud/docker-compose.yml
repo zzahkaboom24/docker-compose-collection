@@ -1,0 +1,71 @@
+volumes:
+  nextcloud_data:
+    name: nextcloud_data
+  nextcloud-mariadb_data:
+    name: nextcloud-mariadb_data
+  nextcloud-valkey_data:
+    name: nextcloud-valkey_data
+  # syncthing_data:
+  #   name: syncthing_data
+
+services:
+  nextcloudmariadb:
+    container_name: NextcloudMariaDB
+    image: mariadb:11.4
+    restart: always
+    labels:
+      - wud.watch=false
+    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW --innodb-file-per-table=1 --skip-innodb-read-only-compressed
+    volumes:
+      - nextcloud-mariadb_data:/var/lib/mysql
+    environment:
+      # Use `python3 -c 'import secrets; print(secrets.token_urlsafe(48))'` in terminal to generate the 64 character random password
+      - MYSQL_ROOT_PASSWORD=hQMzpaZl6y53r9z23G_65uH9GbcUUCx9_bcRZ8NcLZRKBjV-fVA_IfaVW2cD47iz
+      - MYSQL_PASSWORD=1aw6aNMnpte07r1yvZTcqbPgKeqdpVYYoZGWzzhOIIQq5hY4rj8ts4xuE671NGWS
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+    networks:
+      - nextcloud-network
+
+  nextcloudvalkey:
+    container_name: NextcloudValkey
+    image: valkey/valkey:alpine
+    restart: always
+    volumes:
+      - nextcloud-valkey_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    networks:
+      - nextcloud-network
+
+  nextcloud:
+    container_name: Nextcloud
+    image: nextcloud:31.0.5
+    restart: always
+    ports:
+      - 8080:80
+    depends_on:
+      - nextcloudmariadb
+      - nextcloudvalkey
+    volumes:
+      - nextcloud_data:/var/www/html
+      # - syncthing_data:/var/syncthing
+    environment:
+      - MYSQL_PASSWORD=1aw6aNMnpte07r1yvZTcqbPgKeqdpVYYoZGWzzhOIIQq5hY4rj8ts4xuE671NGWS
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_HOST=nextcloudmariadb
+      - REDIS_HOST=nextcloudvalkey
+      - REDIS_PORT=6379
+      - PHP_UPLOAD_LIMIT=30720M # To increase the upload limit [default = 512M]
+      - PHP_MEMORY_LIMIT=2048M # To give Nextcloud more memory to work with [default = 512M]
+      - APACHE_BODY_LIMIT=0 # To fix 413 Payload too large issue with big files [default = 1G]
+    networks:
+      - nextcloud-network
+
+networks:
+  nextcloud-network:
+    name: nextcloud-network
