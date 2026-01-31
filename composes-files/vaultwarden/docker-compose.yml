@@ -9,6 +9,7 @@ services:
     restart: always
     environment:
       DOMAIN: "https://vaultwarden.yourdomain.tld"
+      EXPERIMENTAL_CLIENT_FEATURE_FLAGS: extension-refresh,autofill-overlay,autofill-v2,ssh-key-vault-item,ssh-agent
       # Run `/vaultwarden hash` in the container's terminal to generate the ADMIN_TOKEN
       # ADMIN_TOKEN: '$argon2id$v=19$m=65540,t=3,p=4$jimQKAHoZTYHF4vfsAf4TvpwEBgpOBk4CgJceUBfN1s$P6FWUAY9792IzNd/cGuvxQFzreBLtn3M6b+gcARAi2Q'
     volumes:
