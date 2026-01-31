@@ -16,6 +16,7 @@ services:
       # If you have requested an INSTALLATION ID and KEY for bitwarden.eu (European Union) instead, you also have to set the following:
       # PUSH_RELAY_URI: https://api.bitwarden.eu
       # PUSH_IDENTITY_URI: https://identity.bitwarden.eu
+      LOG_FILE: /data/vaultwarden.log
       EXPERIMENTAL_CLIENT_FEATURE_FLAGS: extension-refresh,autofill-overlay,autofill-v2,ssh-key-vault-item,ssh-agent
       # Run `/vaultwarden hash` in the container's terminal to generate the ADMIN_TOKEN
       # ADMIN_TOKEN: '$argon2id$v=19$m=65540,t=3,p=4$jimQKAHoZTYHF4vfsAf4TvpwEBgpOBk4CgJceUBfN1s$P6FWUAY9792IzNd/cGuvxQFzreBLtn3M6b+gcARAi2Q'
