@@ -82,7 +82,12 @@ services:
             - GNUPGHOME=/sl/pgp
             - LOCAL_FILE_UPLOAD=1
             - POSTFIX_SERVER=simpleloginpostfix
-            - DKIM_PRIVATE_KEY_PATH=/dkim.key
+            # Use the following 2 commands to generate the dkim.key,
+            # you'll need to use the dkim.pub.key value in `v=DKIM1; k=rsa; p=PUBLIC_KEY` in your DNS,
+            # which should be set as a TXT record for `dkim._domainkey.mydomain.com.`:
+            # openssl genrsa -out dkim.key -traditional 2048
+            # openssl rsa -in dkim.key -pubout -out dkim.pub.key
+            - DKIM_PRIVATE_KEY_PATH=/sl/dkim.key
             - FLASK_SECRET=${FLASK_SECRET}
             # Comment the two environment variables below to enable registration; Uncomment to disable registration.
             - DISABLE_REGISTRATION=1
@@ -91,7 +96,7 @@ services:
             - simplelogin_data:/sl
             - simplelogin-pgp_data:/sl/pgp
             - simplelogin-upload_data:/code/static/upload
-            - /dkim.key:/dkim.key:ro
+            - /dkim.key:/sl/dkim.key:ro
         ports:
             - 7777:7777
             - 20381:20381
