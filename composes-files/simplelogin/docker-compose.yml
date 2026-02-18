@@ -87,6 +87,7 @@ services:
             # which should be set as a TXT record for `dkim._domainkey.mydomain.com.`:
             # openssl genrsa -out dkim.key -traditional 2048
             # openssl rsa -in dkim.key -pubout -out dkim.pub.key
+            # In the Docker container, you'll have to run `chown 100000:100000 /sl/dkim.*` to fix permission issues.
             - DKIM_PRIVATE_KEY_PATH=/sl/dkim.key
             - FLASK_SECRET=${FLASK_SECRET}
             # Comment the two environment variables below to enable registration; Uncomment to disable registration.
