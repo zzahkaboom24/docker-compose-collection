@@ -113,6 +113,12 @@ services:
     simpleloginpostfix:
         image: simplelogin/postfix:latest
         container_name: SimpleLoginPostfix
+        entrypoint: sh
+        command:
+            - -c
+            - |
+              touch /disable.pem &&
+              exec ./docker-entrypoint.sh
         env_file: .env
         environment:
             - ALIASES_DEFAULT_DOMAIN=${ALIASES_DEFAULT_DOMAIN}
