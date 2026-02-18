@@ -135,6 +135,8 @@ services:
             - RELAY_PORT=${RELAY_PORT}
             - RELAY_HOST_USERNAME=${RELAY_HOST_USERNAME}
             - RELAY_HOST_PASSWORD=${RELAY_HOST_PASSWORD}
+            - TLS_KEY_FILE=${TLS_KEY_FILE}
+            - TLS_CERT_FILE=${TLS_CERT_FILE}
         dns:
             - 8.8.8.8
             - 8.8.4.4
