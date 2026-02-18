@@ -123,6 +123,7 @@ services:
             - EMAIL_HANDLER_HOST=simplelogin
             - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
             - POSTFIX_FQDN=${POSTFIX_FQDN}
+            - POSTFIX_DQN_KEY=${POSTFIX_DQN_KEY}
             - SIMPLELOGIN_COMPATIBILITY_MODE=v4
             - RELAY_HOST=${RELAY_HOST}
             - RELAY_PORT=${RELAY_PORT}
