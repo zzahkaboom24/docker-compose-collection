@@ -3,8 +3,6 @@ volumes:
     name: simplelogin-postgres_data
   simplelogin_data:
     name: simplelogin_data
-  simplelogin-pgp_data:
-    name: simplelogin-pgp_data
   simplelogin-upload_data:
     name: simplelogin-upload_data
   simplelogin-postfix_data:
@@ -79,15 +77,16 @@ services:
             - EMAIL_SERVERS_WITH_PRIORITY=${EMAIL_SERVERS_WITH_PRIORITY}
             - DISABLE_ALIAS_SUFFIX=1
             - DB_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@simpleloginpostgres:${POSTGRES_PORT}/${POSTGRES_DB}
+            # Run the following command inside of the container to generate the missing pgp folder:
+            # cd /sl && mkdir pgp
             - GNUPGHOME=/sl/pgp
             - LOCAL_FILE_UPLOAD=1
             - POSTFIX_SERVER=simpleloginpostfix
-            # Use the following 2 commands to generate the dkim.key,
+            # Use the following 2 commands to generate the dkim.key inside of the container,
             # you'll need to use the dkim.pub.key value in `v=DKIM1; k=rsa; p=PUBLIC_KEY` in your DNS,
             # which should be set as a TXT record for `dkim._domainkey.mydomain.com.`:
             # openssl genrsa -out dkim.key -traditional 2048
             # openssl rsa -in dkim.key -pubout -out dkim.pub.key
-            # In the Docker container, you'll have to run `chown 100000:100000 /sl/dkim.*` to fix permission issues.
             - DKIM_PRIVATE_KEY_PATH=/sl/dkim.key
             - FLASK_SECRET=${FLASK_SECRET}
             # Comment the two environment variables below to enable registration; Uncomment to disable registration.
@@ -95,9 +94,7 @@ services:
             - DISABLE_ONBOARDING=true
         volumes:
             - simplelogin_data:/sl
-            - simplelogin-pgp_data:/sl/pgp
             - simplelogin-upload_data:/code/static/upload
-            - /dkim.key:/sl/dkim.key:ro
         ports:
             - 7777:7777
             - 20381:20381
