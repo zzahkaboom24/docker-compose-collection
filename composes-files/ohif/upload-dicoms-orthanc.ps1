@@ -18,4 +18,4 @@ $chunks | ForEach-Object -Parallel {
         $percent = [math]::Round(($done / $using:total) * 100, 1)
         Write-Host "[$done/$using:total] $percent% - $($file | Split-Path -Leaf)"
     }
-} -ThrottleLimit $using:threads
+} -ThrottleLimit $threads
