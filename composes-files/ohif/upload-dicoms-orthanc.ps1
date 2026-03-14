@@ -1,4 +1,5 @@
 # Requires PowerShell 7+. Install with: winget install Microsoft.PowerShell
+# Replace "path\to\file" with location to storescu.exe, in my case "C:\Users\zzahkaboom24\Software\dcmtk-3.7.0\bin\storescu.exe"
 $storescu = "path\to\file"
 $files = Get-ChildItem -Recurse -Filter "*.dcm" "path\to\folder"
 $total = $files.Count
