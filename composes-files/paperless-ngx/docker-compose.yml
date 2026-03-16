@@ -1,0 +1,96 @@
+volumes:
+  paperlessngx_data:
+    name: paperlessngx_data
+  paperlessngx_media:
+    name: paperlessngx_media
+  paperlessngx_export:
+    name: paperlessngx_export
+  paperlessngx_consume:
+    name: paperlessngx_consume
+  paperlessngx-postgres_data:
+    name: paperlessngx-postgres_data
+  paperlessngx-valkey_data:
+    name: paperlessngx-valkey_data
+
+services:
+  paperless-ngxvalkey:
+    container_name: Paperless-NGXValkey
+    image: valkey/valkey:alpine
+    restart: always
+    volumes:
+      - paperlessngx-valkey_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    networks:
+      - nginxproxymanager_default
+
+  paperless-ngxpostgres:
+    container_name: Paperless-NGXPostgres
+    image: postgres:16
+    restart: always
+    volumes:
+      - paperlessngx-postgres_data:/var/lib/postgresql/data
+    env_file: .env
+    environment:
+      POSTGRES_DB: paperless
+      POSTGRES_USER: paperless
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - nginxproxymanager_default
+
+  paperless-ngx:
+    container_name: Paperless-NGX
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    restart: always
+    depends_on:
+      - paperless-ngxpostgres
+      - paperless-ngxvalkey
+      - paperless-ngxgotenberg
+      - paperless-ngxtika
+    ports:
+      - "8001:8000"
+    volumes:
+      - paperlessngx_data:/usr/src/paperless/data
+      - paperlessngx_media:/usr/src/paperless/media
+      - paperlessngx_export:/usr/src/paperless/export
+      - paperlessngx_consume:/usr/src/paperless/consume
+    env_file: .env
+    environment:
+      PAPERLESS_URL: https://paperless.yourdomain.tld
+      PAPERLESS_REDIS: redis://paperless-ngxvalkey:6379
+      PAPERLESS_DBHOST: paperless-ngxpostgres
+      PAPERLESS_DBUSER: paperless # only needed if non-default username
+      PAPERLESS_DBPASS: ${POSTGRES_PASSWORD}
+      PAPERLESS_TIKA_ENABLED: 1
+      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://paperless-ngxgotenberg:3000
+      PAPERLESS_TIKA_ENDPOINT: http://paperless-ngxtika:9998
+    networks:
+      - nginxproxymanager_default
+
+  paperless-ngxgotenberg:
+    container_name: Paperless-NGXGotenberg
+    image: gotenberg/gotenberg:8.27
+    restart: always
+    # The gotenberg chromium route is used to convert .eml files. We do not
+    # want to allow external content like tracking pixels or even javascript.
+    command:
+      - "gotenberg"
+      - "--chromium-disable-javascript=true"
+      - "--chromium-allow-list=file:///tmp/.*"
+    networks:
+      - nginxproxymanager_default
+
+  paperless-ngxtika:
+    container_name: Paperless-NGXTika
+    image: apache/tika:latest
+    restart: always
+    networks:
+      - nginxproxymanager_default
+
+networks:
+  nginxproxymanager_default:
+    external: true
+    name: nginxproxymanager_default
