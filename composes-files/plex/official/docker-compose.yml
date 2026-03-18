@@ -1,0 +1,43 @@
+volumes:
+  plex-config_data:
+    name: plex-config_data
+  plex-movies_data:
+    name: plex-movies_data
+  plex-music_data:
+    name: plex-music_data
+  plex-tv_data:
+    name: plex-tv_data
+  plex-test_data:
+    name: plex-test_data
+
+services:
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: Plex
+    ports:
+      - 9002:32400
+    env_file: .env
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+      - VERSION=docker
+      # Lasts 4 minutes.
+      # Get from https://plex.tv/claim
+      - PLEX_CLAIM=${PLEX_CLAIM}
+    volumes:
+      - plex-config_data:/config
+      - plex-movies_data:/movies
+      - plex-music_data:/music
+      - plex-tv_data:/tv
+      - plex-test_data:/test
+    devices:
+      - /dev/dri:/dev/dri # For hardware transcoding support
+    restart: always
+    networks:
+      - nginxproxymanager_default
+
+networks:
+  nginxproxymanager_default:
+    external: true
+    name: nginxproxymanager_default
