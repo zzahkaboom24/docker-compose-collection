@@ -1,0 +1,42 @@
+services:
+  wireguard:
+    image: lscr.io/linuxserver/wireguard:latest
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+    volumes:
+      - /home/zzahkaboom24/PlexWireguard/wireguard-client:/config
+      - /lib/modules:/lib/modules
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    ports:
+      - 32400:32400
+    restart: always
+  
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    ports:
+      - 9002:32400
+    env_file: .env
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Berlin
+      - VERSION=docker
+      # Lasts 4 minutes.
+      # Get from https://plex.tv/claim
+      - PLEX_CLAIM=${PLEX_CLAIM}
+    volumes:
+      - /home/zzahkaboom24/PlexWireguard/config:/config
+      - /home/zzahkaboom24/PlexWireguard/tv:/tv
+      - /home/zzahkaboom24/PlexWireguard/movies:/movies
+    devices:
+      - /dev/dri:/dev/dri # For hardware transcoding support
+    network_mode: service:wireguard
+    restart: always
