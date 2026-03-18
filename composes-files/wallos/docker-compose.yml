@@ -1,0 +1,25 @@
+volumes:
+  wallos-db_data:
+    name: wallos-db_data
+  wallos-logos_data:
+    name: wallos-logos_data
+
+services:
+  wallos:
+    container_name: Wallos
+    image: bellamy/wallos:latest
+    ports:
+      - "8282:80/tcp"
+    environment:
+      TZ: 'Europe/Berlin'
+    volumes:
+      - 'wallos-db_data:/var/www/html/db'
+      - 'wallos-logos_data:/var/www/html/images/uploads/logos'
+    restart: always
+    networks:
+      - nginxproxymanager_default
+
+networks:
+  nginxproxymanager_default:
+    external: true
+    name: nginxproxymanager_default
