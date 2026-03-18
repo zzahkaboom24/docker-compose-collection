@@ -1,0 +1,157 @@
+volumes:
+  pterodactyl_db:
+    name: pterodactyl_db
+  pterodactyl_redis:
+    name: pterodactyl_redis
+  pterodactyl_var:
+    name: pterodactyl_var
+  pterodactyl_nginx:
+    name: pterodactyl_nginx
+  pterodactyl_certs:
+    name: pterodactyl_certs
+  pterodactyl_logs:
+    name: pterodactyl_logs
+  pterodactyl_etc:
+    name: pterodactyl_etc
+  pterodactyl_data:
+    name: pterodactyl_data
+  pterodactyl_log:
+    name: pterodactyl_log
+  pterodactyl_tmp:
+    name: pterodactyl_tmp
+
+x-common:
+  database:
+    &db-environment
+    # Do not remove the "&db-password" from the end of the line below, it is important
+    # for Panel functionality.
+    MYSQL_USER: &db-user "pterodactyl"
+    # Use `python3 -c 'import secrets; print(secrets.token_urlsafe(48))'` in terminal to generate the 64 character random password
+    MYSQL_PASSWORD: &db-password "ZUNcm_0xudxjFOTSkP75inHLGJO2ib3kHZx2EXbcB0VsA-X-xd051HwmK1PUUjl8"
+    MYSQL_ROOT_PASSWORD: "QHX8WO0_G_prK5suWFJbS1y6nV76RHTVBONDK_sc6VihBty1ljMnAx-daevO5kSr"
+  panel:
+    &panel-environment
+    APP_URL: "https://panel.yourdomain.tld"
+    # A list of valid timezones can be found here: http://php.net/manual/en/timezones.php
+    APP_TIMEZONE: "Europe/Berlin"
+    APP_SERVICE_AUTHOR: "your@email.tld"
+    # Uncomment the line below and set to a non-empty value if you want to use Let's Encrypt
+    # to generate an SSL certificate for the Panel.
+    # LE_EMAIL: ""
+  mail:
+    &mail-environment
+    MAIL_FROM: "noreply@example.com"
+    MAIL_DRIVER: "smtp"
+    MAIL_HOST: "mail"
+    MAIL_PORT: "1025"
+    MAIL_USERNAME: ""
+    MAIL_PASSWORD: ""
+    MAIL_ENCRYPTION: "true"
+
+#
+# ------------------------------------------------------------------------------------------
+# DANGER ZONE BELOW
+#
+# The remainder of this file likely does not need to be changed. Please only make modifications
+# below if you understand what you are doing.
+#
+
+services:
+  database:
+    container_name: PterodactylMariaDB
+    image: mariadb:11.4
+    restart: always
+    networks:
+      - nginxproxymanager_default
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - "pterodactyl_db:/var/lib/mysql"
+    environment:
+      <<: *db-environment
+      MYSQL_DATABASE: "panel"
+      MYSQL_USER: *db-user
+
+  cache:
+    container_name: PterodactylValkey
+    image: valkey/valkey:alpine
+    restart: always
+    networks:
+      - nginxproxymanager_default
+    volumes:
+      - "pterodactyl_redis:/data"
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+
+  panel:
+    container_name: Pterodactyl
+    image: ghcr.io/pterodactyl/panel:latest
+    restart: always
+    networks:
+      - nginxproxymanager_default
+    ports:
+      - "8080:80"
+      - "4443:443"
+    links:
+      - database
+      - cache
+    volumes:
+      - "pterodactyl_var:/app/var/"
+      - "pterodactyl_nginx:/etc/nginx/http.d/"
+      - "pterodactyl_certs:/etc/letsencrypt/"
+      - "pterodactyl_logs:/app/storage/logs"
+    environment:
+      <<: [*panel-environment, *mail-environment]
+      DB_PASSWORD: *db-password
+      APP_ENV: "production"
+      APP_ENVIRONMENT_ONLY: "false"
+      CACHE_DRIVER: "redis"
+      SESSION_DRIVER: "redis"
+      QUEUE_DRIVER: "redis"
+      REDIS_HOST: "cache"
+      REDIS_PORT: "6379"
+      DB_HOST: "database"
+      DB_PORT: "3306"
+      DB_USERNAME: *db-user
+
+  wings:
+    container_name: PterodactylWings
+    image: ghcr.io/pterodactyl/wings:latest
+    restart: always
+    networks:
+      - nginxproxymanager_default
+      - pterodactyl_nw
+    ports:
+      # - "8080:8080" # Uncomment this and comment '-"444:443"' instead to use 8080 instead of 443 if you desire.
+      - "444:443"
+      - "2023:2022"
+    tty: true
+    environment:
+      TZ: "Europe/Berlin"
+      WINGS_UID: 988
+      WINGS_GID: 988
+      WINGS_USERNAME: pterodactyl
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/var/lib/docker/containers/:/var/lib/docker/containers/"
+      - "pterodactyl_etc:/etc/pterodactyl/"
+      - "pterodactyl_data:/var/lib/docker/volumes/pterodactyl_data/_data" # Ensures that this bind is on the same path both from in- and outside the container.
+      - "pterodactyl_log:/var/lib/docker/volumes/pterodactyl_log/_data"
+      - "pterodactyl_tmp:/var/lib/docker/volumes/pterodactyl_tmp/_data" # Ensures that this bind is on the same path both from in- and outside the container.
+      - "/run/wings:/run/wings" # Ensures that this bind is on the same path from in- and outside the container.
+      # - "/etc/ssl/certs:/etc/ssl/certs:ro"
+
+networks:
+  nginxproxymanager_default:
+    external: true
+    name: nginxproxymanager_default
+  pterodactyl_nw:
+    name: pterodactyl_nw
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "172.22.0.0/16"
+    driver_opts:
+      com.docker.network.bridge.name: pterodactyl_nw
