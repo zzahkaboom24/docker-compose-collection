@@ -1,0 +1,56 @@
+volumes:
+  zipline-postgres_data:
+    name: zipline-postgres_data
+  zipline-uploads_data:
+    name: zipline-uploads_data
+  zipline-public_data:
+    name: zipline-public_data
+  zipline-themes_data:
+    name: zipline-themes_data
+
+services:
+  postgresql:
+    image: postgres:16
+    container: ZiplinePostgres
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
+      POSTGRES_DB: ${POSTGRESQL_DB}
+    volumes:
+      - zipline-postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'zipline']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  zipline:
+    image: ghcr.io/diced/zipline:latest
+    container_name: Zipline
+    restart: always
+    ports:
+      - '3000:3000'
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://${POSTGRESQL_USER}:${POSTGRESQL_PASSWORD}@postgresql:5432/${POSTGRESQL_DB}
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    volumes:
+      - 'zipline-uploads_data:/zipline/uploads'
+      - 'zipline-public_data:/zipline/public'
+      - 'zipline-themes_data:/zipline/themes'
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://0.0.0.0:3000/api/healthcheck']
+      interval: 15s
+      timeout: 2s
+      retries: 2
+
+networks:
+  nginxproxymanager_default:
+    external: true
+    name: nginxproxymanager_default
