@@ -12,6 +12,7 @@ services:
       - "8282:80/tcp"
     environment:
       TZ: 'Europe/Berlin'
+      HOME: '/root'
     volumes:
       - 'wallos-db_data:/var/www/html/db'
       - 'wallos-logos_data:/var/www/html/images/uploads/logos'
