@@ -1,0 +1,28 @@
+volumes:
+  navidrome_data:
+    name: navidrome_data
+  navidrome_music:
+    name: navidrome_music
+
+services:
+  navidrome:
+    container_name: Navidrome
+    image: deluan/navidrome:latest
+    user: 1000:1000 # should be owner of volumes
+    ports:
+      - "4533:4533"
+    restart: always
+    environment:
+      # Optional: put your config options customization here. Examples:
+      ND_LOGLEVEL: info  
+      ND_BASEURL: "https://navidrome.yourdomain.tld"
+    volumes:
+      - "navidrome_data:/data"
+      - "/home/zzahkaboom24/Files/Music:/music:ro"
+    networks:
+      - nginxproxymanager_default
+
+networks:
+  nginxproxymanager_default:
+    external: true
+    name: nginxproxymanager_default
