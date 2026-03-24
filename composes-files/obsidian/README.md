@@ -1,0 +1,1 @@
+- To be used with the Self-Hosted LiveSync plugin for Obsidian
