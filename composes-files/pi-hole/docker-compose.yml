@@ -1,0 +1,71 @@
+volumes:
+  pihole_data:
+    name: pihole_data
+  pihole-dns_data:
+    name: pihole-dns_data
+
+services:
+  pihole:
+    container_name: Pi-hole
+    image: pihole/pihole:latest
+    # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp"
+      - "800:800/tcp"
+    environment:
+      # If you want to give your device a hostname, so you can differentiate what ip address belongs to which device do the following
+      #
+      # Go in the shell of the Pi-hole Docker container
+      # cd /etc/pihole
+      # nano custom.list (If the nano command is not found, run apt update && apt install nano)
+      # For easier management, I recommend first adding your device name and ip address via Local DNS -> DNS Records first in the web ui, then changing the device name in the custom.list instead.
+      # In the file that opens, add your ip first, then the name that you desire second (Avoid spaces in the name at all costs, uppercase and lowercase letters both work fine)
+      # also each entry is separated by a new line, this is how it could look like in your file for example
+      # 
+      # 192.168.0.8 Home-PC
+      # 192.168.0.22 Xiaomi-12T-Pro
+      #
+      # After you're done, save the file, then restart the Pi-hole Docker container to apply the changes.
+      # Also check Settings -> DNS -> Upstream DNS Servers
+      # Custom 1 should be set to 192.168.112.32#5054
+      # Custom 2 should be empty
+      # Custom 3 should be set to anything of your wish, in this case I use Google's IPV6 address
+      # Custom 4 should be set to anything of your wish, in this case I use Google's IPV6 address
+      FTLCONF_dns_upstreams: '172.30.0.3#5054'
+      FTLCONF_webserver_port: '800'
+      TZ: 'Europe/Berlin'
+      # Set a secure password here below, or it will be random
+      # FTLCONF_webserver_api_password: 'yourpassword'
+    volumes:
+      - 'pihole_data:/etc/pihole'
+      - 'pihole-dns_data:/etc/dnsmasq.d'
+    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    restart: always # Recommended but not required (DHCP needs NET_ADMIN) 
+    networks:
+      internal:
+        ipv4_address: 172.30.0.2
+
+  piholedoh:
+    container_name: Pi-holeDoH
+    restart: always
+    image: visibilityspots/cloudflared
+    environment:
+      PORT: 5054
+      ADDRESS: 0.0.0.0
+      UPSTREAM1: https://1.1.1.1/dns-query
+      UPSTREAM2: https://1.0.0.1/dns-query
+    volumes:
+      - '/etc/localtime:/etc/localtime'
+    # Inside this container, you could run dig @127.0.0.1 -p 5054 google.com
+    # If the command succeeds, you'd know that DNS over HTTPS will work.
+    networks:
+      internal:
+        ipv4_address: 172.30.0.3
+
+networks:
+  internal:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/29
