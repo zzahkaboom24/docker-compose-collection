@@ -1,0 +1,25 @@
+volumes:
+  obsidian_data:
+    name: obsidian_data
+
+services:
+  couchdb:
+    image: couchdb:latest
+    container_name: Obsidian
+    mem_limit: 2g
+    ports:
+      - "5984:5984"
+    volumes:
+      - obsidian_data:/opt/couchdb/data
+      - obsidian_data:/opt/couchdb/etc
+    environment:
+      - COUCHDB_USER=temp
+      - COUCHDB_PASSWORD=temp
+    restart: always
+    networks:
+      - nginxproxymanager_default
+
+networks:
+  nginxproxymanager_default:
+    external: true
+    name: nginxproxymanager_default
