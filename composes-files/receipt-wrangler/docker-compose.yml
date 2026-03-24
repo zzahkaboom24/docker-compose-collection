@@ -1,0 +1,87 @@
+volumes:
+  wrangler_data:
+    name: wrangler_data
+  wrangler-mariadb_data:
+    name: wrangler-mariadb_data
+
+services:
+  db:
+    container_name: WranglerMariaDB
+    image: library/mariadb:10
+    restart: always
+    labels:
+      - wud.watch=false
+    command: --sql-mode="ANSI_QUOTES"
+    env_file:
+      - .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=wrangler
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=wrangler
+      - MYSQL_TCP_PORT=3307
+    volumes:
+      - wrangler-mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "-p${MYSQL_ROOT_PASSWORD}", "ping", "--silent" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - nginxproxymanager_default
+
+  proxy:
+    container_name: WranglerProxy
+    image: noah231515/receipt-wrangler-proxy:latest
+    ports:
+      - 9082:80
+    depends_on:
+      - api
+      - frontend
+    networks:
+      - nginxproxymanager_default
+
+  api:
+    container_name: WranglerAPI
+    image: noah231515/receipt-wrangler-api:latest
+    restart: always
+    working_dir: /go/api
+    command: ./api --env prod
+    ports:
+      - 9080:8081
+    volumes:
+      - wrangler_data:/go/api/data
+      - wrangler_data:/go/api/logs
+      - wrangler_data:/go/api/sqlite
+    env_file:
+      - .env
+    environment:
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_USER=wrangler
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_NAME=wrangler
+      - DB_HOST=db
+      - DB_PORT=3307
+      - DB_ENGINE=mariadb
+    links:
+      - db
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - nginxproxymanager_default
+
+  frontend:
+    container_name: WranglerFrontend
+    image: noah231515/receipt-wrangler-desktop:latest
+    restart: always
+    ports:
+      - 9081:80
+    networks:
+      - nginxproxymanager_default
+
+networks:
+  nginxproxymanager_default:
+    external: true
+    name: nginxproxymanager_default
