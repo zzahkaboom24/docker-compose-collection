@@ -1,0 +1,55 @@
+volumes:
+  vikunja-mariadb_data:
+    name: vikunja-mariadb_data
+  vikunja_data:
+    name: vikunja_data
+
+services:
+  api:
+    image: vikunja/vikunja
+    container_name: Vikunja
+    env_file:
+      - .env
+    environment:
+      VIKUNJA_DATABASE_HOST: db:3308
+      VIKUNJA_DATABASE_PASSWORD: ${VIKUNJA_DATABASE_PASSWORD}
+      VIKUNJA_DATABASE_TYPE: mysql
+      VIKUNJA_DATABASE_USER: vikunja
+      VIKUNJA_DATABASE_DATABASE: vikunja
+      VIKUNJA_SERVICE_JWTSECRET: ${VIKUNJA_SERVICE_JWTSECRET}
+      VIKUNJA_SERVICE_FRONTENDURL: ${VIKUNJA_SERVICE_FRONTENDURL}
+      VIKUNJA_SERVICE_ENABLECALDAV: true
+    ports:
+      - 3456:3456
+    volumes:
+      - vikunja_data:/app/vikunja/files
+    restart: always
+    networks:
+      - nginxproxymanager_default
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:10
+    container_name: VikunjaMariaDB
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: vikunja
+      MYSQL_PASSWORD: ${VIKUNJA_DATABASE_PASSWORD}
+      MYSQL_DATABASE: vikunja
+      MYSQL_TCP_PORT: 3308
+    volumes:
+      - vikunja-mariadb_data:/var/lib/mysql
+    restart: always
+    networks:
+      - nginxproxymanager_default
+
+networks:
+  nginxproxymanager_default:
+    external: true
+    name: nginxproxymanager_default
