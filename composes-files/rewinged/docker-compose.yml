@@ -1,0 +1,24 @@
+volumes:
+    rewinged_data:
+        name: rewinged_data
+
+services:
+    rewinged:
+        container_name: ReWinged
+        image: ghcr.io/jantari/rewinged:stable
+        env_file:
+            - .env
+        environment:
+            - REWINGED_LISTEN=0.0.0.0:8080
+            - REWINGED_SOURCEAUTHENTRAIDAUTHORITYURL=${REWINGED_SOURCEAUTHENTRAIDAUTHORITYURL}
+            - REWINGED_SOURCEAUTHENTRAIDRESOURCE=${REWINGED_SOURCEAUTHENTRAIDRESOURCE}
+            - REWINGED_SOURCEAUTHTYPE=microsoftEntraId
+        ports:
+            - 8085:8080
+        volumes:
+            - rewinged_data:/packages:ro
+
+networks:
+    nginxproxymanager_default:
+        external: true
+        name: nginxproxymanager_default
