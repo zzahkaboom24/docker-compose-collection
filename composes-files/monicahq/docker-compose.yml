@@ -1,0 +1,143 @@
+volumes:
+  monica_data:
+    name: monica_data
+  monica-db_data:
+    name: monica-db_data
+  monica-valkey_data:
+    name: monica-valkey_data
+  monica-minio_data:
+    name: monica-minio_data
+
+services:
+  monica:
+    image: monica:5.0.0-beta.5-apache
+    container_name: Monica
+    depends_on:
+      - monicapostgres
+      - monicavalkey
+      # - monicaminio
+    ports:
+      - 8081:80
+    env_file: stack.env
+    environment:
+      # Run the following command on your host machine to generate an APP_KEY, then copy the output:
+      # echo -n 'base64:'; openssl rand -base64 32
+      - APP_KEY=${APP_KEY}
+      - DB_HOST=monicapostgres
+      - DB_PORT=5432
+      - DB_CONNECTION=pgsql
+      - DB_DATABASE=monica
+      - DB_USERNAME=monica
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - REDIS_HOST=monicavalkey
+      - REDIS_PORT=6379
+      # Uncomment QUEUE_CONNECTION=sync and comment QUEUE_CONNECTION=redis when first creating the container until you created an user and logged in with the user in Monica.
+      # After having logged into the user, uncomment QUEUE_CONNECTION=redis and comment QUEUE_CONNECTION=sync.
+      # - QUEUE_CONNECTION=sync
+      - QUEUE_CONNECTION=redis
+      # APP_ENV documentation:
+      # local = http
+      # production = https
+      - APP_ENV=local
+      # Stuff for uploading files (in future V5)
+      - UPLOADCARE_PUBLIC_KEY=${UPLOADCARE_PUBLIC_KEY}
+      - UPLOADCARE_PRIVATE_KEY=${UPLOADCARE_PRIVATE_KEY}
+      # S3 Configuration for MinIO | Use after it's out of beta and available
+      # - FILESYSTEM_DISK=s3
+      # - AWS_ACCESS_KEY_ID=${MINIO_ACCESS_KEY_ID}
+      # - AWS_SECRET_ACCESS_KEY=${MINIO_SECRET_ACCESS_KEY}
+      # - AWS_DEFAULT_REGION=us-east-1
+      # - AWS_BUCKET=monica
+      # - AWS_ENDPOINT=uploads:9000
+      # - AWS_USE_PATH_STYLE_ENDPOINT=true
+      # EMail stuff below
+      # Mail credentials used to send emails from the application.
+      - MAIL_MAILER=smtp
+      - MAIL_HOST=smtp.gmail.com
+      - MAIL_PORT=465
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_ENCRYPTION=ssl
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+      - MAIL_FROM_NAME=Monica
+    volumes:
+      - monica_data:/var/www/html/storage
+    entrypoint: bash
+    command:
+      - -c
+      - |
+        php artisan queue:work --sleep=10 --timeout=0 --tries=3 --queue=high,default,low &
+        entrypoint.sh apache2-foreground
+        wait
+    restart: always
+    networks:
+      - nginxproxymanager_default
+
+  # Database stuff (in past V4)
+  # monicapostgres:
+    # image: mariadb:11
+    # env_file: stack.env
+    # environment:
+      # - MYSQL_RANDOM_ROOT_PASSWORD=true
+      # - MYSQL_DATABASE=monica
+      # - MYSQL_USER=monica
+      # - MYSQL_PASSWORD=${POSTGRES_PASSWORD}
+    # networks:
+      # - nginxproxymanager_default
+
+  # Database stuff (in future V5)
+  monicapostgres:
+    image: postgres:alpine
+    container_name: MonicaPostgres
+    environment:
+      - POSTGRES_USER=monica
+      - POSTGRES_DB=monica
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - monica-db_data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - nginxproxymanager_default
+
+  monicavalkey:
+    image: valkey/valkey:alpine
+    container_name: MonicaValkey
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    volumes:
+      - monica-valkey_data:/data
+    networks:
+      - nginxproxymanager_default
+
+  # Storage stuff (in future V5)
+  # monicaminio:
+    # image: minio/minio:latest
+    # container_name: MonicaMinIO
+    # environment:
+      # - MINIO_ROOT_USER=${MINIO_ACCESS_KEY_ID}
+      # - MINIO_ROOT_PASSWORD=${MINIO_SECRET_ACCESS_KEY}
+    # volumes:
+      # - monica-minio_data:/data
+    # command: server /data --console-address ":9001"
+    # ports:
+      # - 9001:9000
+      # - 9003:9001
+    # healthcheck:
+      # test: ["CMD", "curl", "-f", "http://localhost:9001/minio/health/live"]
+      # interval: 30s
+      # timeout: 20s
+      # retries: 3
+    # restart: always
+    # networks:
+      # - nginxproxymanager_default
+
+networks:
+  nginxproxymanager_default:
+    external: true
+    name: nginxproxymanager_default
