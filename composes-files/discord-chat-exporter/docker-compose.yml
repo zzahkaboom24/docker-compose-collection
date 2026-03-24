@@ -1,0 +1,32 @@
+volumes:
+  discordchatexporter-IncrementalBackup_data:
+    name: discordchatexporter-IncrementalBackup_data
+  discordchatexporter-exports_data:
+    name: discordchatexporter-exports_data
+  discordchatexporter-cache_data:
+    name: discordchatexporter-cache_data
+  discordchatexporter-configdb_data:
+    name: discordchatexporter-configdb_data
+  discordchatexporter-db_data:
+    name: discordchatexporter-db_data
+
+services:
+  dce:
+    container_name: DiscordChatExporter
+    image: slada/dcef:main
+    restart: always
+    ports:
+      - 21011:21011
+    volumes:
+      - discordchatexporter-IncrementalBackup_data:/dcef/IncrementalBackup
+      - discordchatexporter-exports_data:/dcef/exports
+      - discordchatexporter-cache_data:/dcef/cache
+      - discordchatexporter-configdb_data:/data/configdb
+      - discordchatexporter-db_data:/data/db
+    networks:
+      - nginxproxymanager_default
+
+networks:
+  nginxproxymanager_default:
+    external: true
+    name: nginxproxymanager_default
