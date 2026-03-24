@@ -1,0 +1,25 @@
+volumes:
+  homepage-config_data:
+    name: homepage-config_data
+
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: Homepage
+    environment:
+      HOMEPAGE_ALLOWED_HOSTS: dash.zzahkaboom24.de,gethomepage.dev,192.168.178.2:3000 # required, may need port. See gethomepage.dev/installation/#homepage_allowed_hosts
+      PUID: 1000 # optional, your user id
+      PGID: 1000 # optional, your group id
+    ports:
+      - 3000:3000
+    volumes:
+      - homepage-config_data:/app/config # Make sure your local config directory exists
+      - /var/run/docker.sock:/var/run/docker.sock:ro # optional, for docker integrations
+    restart: always
+    networks:
+      - nginxproxymanager_default
+
+networks:
+  nginxproxymanager_default:
+    external: true
+    name: nginxproxymanager_default
