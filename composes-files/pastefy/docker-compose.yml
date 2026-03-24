@@ -1,0 +1,186 @@
+volumes:
+  pastefy_data:
+    name: pastefy_data
+  pastefy-mariadb_data:
+    name: pastefy-mariadb_data
+  pastefy-authentik-postgres_data:
+    name: pastefy-authentik-postgres_data
+  pastefy-authentik-media_data:
+    name: pastefy-authentik-media_data
+  pastefy-authentik-templates_data:
+    name: pastefy-authentik-templates_data
+  pastefy-authentik-certs_data:
+    name: pastefy-authentik-certs_data
+  pastefy-authentik-redis_data:
+    name: pastefy-authentik-redis_data
+
+services:
+   pastefymariadb:
+     container_name: PastefyMariaDB
+     image: mariadb:10.11
+     restart: always
+     labels:
+       - wud.watch=false
+     volumes:
+       - pastefy-mariadb_data:/var/lib/mysql
+     env_file: .env
+     environment:
+       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+       MYSQL_DATABASE: pastefy
+       MYSQL_USER: pastefy
+       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+     healthcheck:
+       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+       start_period: 10s
+       interval: 10s
+       timeout: 5s
+       retries: 3
+     networks:
+       - nginxproxymanager_default
+
+   pastefy:
+     container_name: Pastefy
+     depends_on:
+       pastefymariadb:
+         condition: service_healthy
+       pastefyauthentik:
+         condition: service_started
+     image: interaapps/pastefy:latest
+     restart: always
+     volumes:
+       - pastefy_data:/opt/jar
+     ports:
+       - "9999:80"
+     env_file: .env
+     environment:
+       HTTP_SERVER_PORT: 80
+       HTTP_SERVER_CORS: "*"
+       DATABASE_DRIVER: mysql
+       DATABASE_NAME: pastefy
+       DATABASE_USER: pastefy
+       DATABASE_PASSWORD: ${MYSQL_PASSWORD}
+       DATABASE_HOST: pastefymariadb
+       DATABASE_PORT: 3306
+       SERVER_NAME: "https://pastefy.zzahkaboom24.de"
+       PASTEFY_LOGIN_REQUIRED_CREATE: true
+       PASTEFY_LOGIN_REQUIRED_READ: false
+       # Change `PASTEFY_GRANT_ACCESS_REQUIRED` to `true` once you logged in with your desired user and set it up as admin.
+       # To set up your desired user as admin, log in with your desired user first to create it
+       # Go in the PastefyMariaDB Docker container and run the following commands
+       #
+       # mysql -u root -p
+       # USE pastefy;
+       # DESCRIBE pastefy_users;
+       # SELECT id, name, unique_name, email, type
+       # FROM pastefy_users;
+       #
+       # The commands above will select the pastefy_users list and show you your currently registered user(s).
+       # To actually set your user as admin, you could run the following commands, tho it can be the name or email instead of the unique name as well
+       #
+       # UPDATE pastefy_users
+       # SET type = 'ADMIN'
+       # WHERE unique_name = 'your_unique_name';
+       PASTEFY_GRANT_ACCESS_REQUIRED: false
+       OAUTH2_OIDC_CLIENT_ID: ${OAUTH2_OIDC_CLIENT_ID}
+       OAUTH2_OIDC_CLIENT_SECRET: ${OAUTH2_OIDC_CLIENT_SECRET}
+       OAUTH2_OIDC_AUTH_ENDPOINT: ${OAUTH2_OIDC_AUTH_ENDPOINT}
+       OAUTH2_OIDC_TOKEN_ENDPOINT: ${OAUTH2_OIDC_TOKEN_ENDPOINT}
+       OAUTH2_OIDC_USERINFO_ENDPOINT: ${OAUTH2_OIDC_USERINFO_ENDPOINT}
+       SPRING_PROFILES_ACTIVE: debug
+     networks:
+       - nginxproxymanager_default
+
+   pastefyauthentikpostgres:
+     container_name: PastefyAuthentikPostgres
+     image: docker.io/library/postgres:16-alpine
+     restart: always
+     healthcheck:
+       test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+       start_period: 20s
+       interval: 30s
+       retries: 5
+       timeout: 5s
+     volumes:
+       - pastefy-authentik-postgres_data:/var/lib/postgresql/data
+     env_file: .env
+     environment:
+       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+       POSTGRES_USER: ${POSTGRES_USER}
+       POSTGRES_DB: ${POSTGRES_DB}
+     networks:
+       - nginxproxymanager_default
+
+   pastefyauthentikredis:
+     container_name: PastefyAuthentikRedis
+     image: docker.io/library/redis:alpine
+     command: --save 60 1 --loglevel warning
+     restart: always
+     healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+     volumes:
+       - pastefy-authentik-redis_data:/data
+     networks:
+       - nginxproxymanager_default
+
+   pastefyauthentik:
+     container_name: PastefyAuthentik
+     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.6.3}
+     restart: always
+     command: server
+     ports:
+       - "9004:9000"
+       - "9444:9443"
+     volumes:
+       - pastefy-authentik-media_data:/media
+       - pastefy-authentik-templates_data:/templates
+     env_file: .env
+     environment:
+       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+       AUTHENTIK_REDIS__HOST: pastefyauthentikredis
+       AUTHENTIK_POSTGRESQL__HOST: pastefyauthentikpostgres
+       AUTHENTIK_POSTGRESQL__USER: ${POSTGRES_USER}
+       AUTHENTIK_POSTGRESQL__NAME: ${POSTGRES_DB}
+       AUTHENTIK_POSTGRESQL__PASSWORD: ${POSTGRES_PASSWORD}
+     depends_on:
+       pastefyauthentikpostgres:
+         condition: service_healthy
+       pastefyauthentikredis:
+         condition: service_healthy
+     networks:
+       - nginxproxymanager_default
+
+   pastefyauthentikworker:
+     container_name: PastefyAuthentikWorker
+     image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2025.6.3}
+     restart: always
+     command: worker
+     env_file: .env
+     environment:
+       AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+       AUTHENTIK_REDIS__HOST: pastefyauthentikredis
+       AUTHENTIK_POSTGRESQL__HOST: pastefyauthentikpostgres
+       AUTHENTIK_POSTGRESQL__USER: ${POSTGRES_USER}
+       AUTHENTIK_POSTGRESQL__NAME: ${POSTGRES_DB}
+       AUTHENTIK_POSTGRESQL__PASSWORD: ${POSTGRES_PASSWORD}
+     user: root
+     volumes:
+       - /var/run/docker.sock:/var/run/docker.sock
+       - pastefy-authentik-media_data:/media
+       - pastefy-authentik-certs_data:/certs
+       - pastefy-authentik-templates_data:/templates
+     depends_on:
+       pastefyauthentikpostgres:
+         condition: service_healthy
+       pastefyauthentikredis:
+         condition: service_healthy
+     networks:
+       - nginxproxymanager_default
+
+networks:
+  nginxproxymanager_default:
+    external: true
+    name: nginxproxymanager_default
