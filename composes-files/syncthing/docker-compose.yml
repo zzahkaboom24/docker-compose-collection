@@ -1,0 +1,56 @@
+volumes:
+  syncthing_data:
+    name: syncthing_data
+  syncthing-relay_data:
+    name: syncthing-relay_data
+    
+services:
+  syncthing:
+    image: syncthing/syncthing
+    container_name: Syncthing
+    environment:
+      - PUID=33
+      - PGID=33
+      - TZ=Europe/Berlin
+    volumes:
+      - syncthing_data:/var/syncthing
+    ports:
+      - 8384:8384 # Web UI
+      - 22000:22000/tcp # TCP file transfers
+      - 22000:22000/udp # QUIC file transfers
+      - 21027:21027/udp # Receive local discovery broadcasts
+    restart: always
+    healthcheck:
+      test: curl -fkLsS -m 2 127.0.0.1:8384/rest/noauth/health | grep -o --color=never OK || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    networks:
+      - nginxproxymanager_default
+
+  syncthingrelay:
+    image: syncthing/relaysrv
+    container_name: SyncthingRelay
+    environment:
+      - PUID=33
+      - PGID=33
+      - TZ=Europe/Berlin
+    volumes:
+      - syncthing-relay_data:/etc/strelaysrv
+    ports:
+      - 22067:22067
+      - 22070:22070
+    command: -keys=/etc/strelaysrv -listen=0.0.0.0:22067 -pools=""
+    restart: always
+    healthcheck:
+      test: wget -q -O /dev/null --timeout=2 http://127.0.0.1:22070/status || exit 1
+      interval: 1m
+      timeout: 10s
+      retries: 3
+    networks:
+      - nginxproxymanager_default
+
+networks:
+  nginxproxymanager_default:
+    external: true
+    name: nginxproxymanager_default
