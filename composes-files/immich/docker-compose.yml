@@ -17,7 +17,7 @@ volumes:
 
 services:
   immich-server:
-    container_name: immich_server
+    container_name: Immich
     image: ghcr.io/immich-app/immich-server:release
     # extends:
     #   file: hwaccel.transcoding.yml
@@ -28,6 +28,17 @@ services:
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
+    environment:
+      - TZ=Europe/Berlin
+      - IMMICH_VERSION=v2
+      - NODE_ENV=production
+      - DB_HOSTNAME=database
+      - DB_PORT=5432
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE_NAME=${DB_DATABASE_NAME}
+      - REDIS_HOSTNAME=redis
+      - REDIS_PORT=6379
     ports:
       - '2283:2283'
     depends_on:
@@ -38,7 +49,7 @@ services:
       disable: false
 
   immich-machine-learning:
-    container_name: immich_machine_learning
+    container_name: ImmichMachineLearning
     # For hardware acceleration, add one of -[armnn, cuda, rocm, openvino, rknn] to the image tag.
     # Example tag: ${IMMICH_VERSION:-release}-cuda
     image: ghcr.io/immich-app/immich-machine-learning:release
@@ -49,19 +60,22 @@ services:
       - immich-modelcache_data:/cache
     env_file:
       - .env
+    environment:
+      - TZ=Europe/Berlin
+      - IMMICH_VERSION=v2
     restart: always
     healthcheck:
       disable: false
 
   redis:
-    container_name: immich_redis
+    container_name: ImmichValkey
     image: valkey/valkey:latest
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
 
   database:
-    container_name: immich_postgres
+    container_name: ImmichPostgres
     image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
