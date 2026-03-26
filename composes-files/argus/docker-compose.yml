@@ -1,0 +1,24 @@
+volumes:
+  argus_data:
+    name: argus_data
+
+services:
+  argus:
+    image: releaseargus/argus:latest
+    volumes:
+      # - /path/to/local/config.yml:/app/config.yml
+      - argus_data:/app/data/ # argus.db
+    environment:
+      ARGUS_UID: 911 # Optional UID override
+      ARGUS_GID: 911 # Optional GID override
+      ARGUS_WEB_BASIC_AUTH_USERNAME: yourusername
+      ARGUS_WEB_BASIC_AUTH_PASSWORD: yourpassword
+    ports:
+      - 8080:8080 # <Host_Port:Container_Port>
+    healthcheck: # Optional healthcheck
+      test: ["CMD", "/healthcheck", "http://localhost:8080/api/v1/healthcheck"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: always
