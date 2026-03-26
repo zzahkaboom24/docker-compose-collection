@@ -6,7 +6,7 @@ services:
   argus:
     image: releaseargus/argus:latest
     volumes:
-      # - /path/to/local/config.yml:/app/config.yml
+      # - /path/to/local/config.yml:/app/config.yml # Probably necessary under Docker
       - argus_data:/app/data/ # argus.db
     environment:
       ARGUS_UID: 911 # Optional UID override
