@@ -76,9 +76,7 @@ services:
        # The commands above will select the pastefy_users list and show you your currently registered user(s).
        # To actually set your user as admin, you could run the following commands, tho it can be the name or email instead of the unique name as well
        #
-       # UPDATE pastefy_users
-       # SET type = 'ADMIN'
-       # WHERE unique_name = 'your_unique_name';
+       # UPDATE pastefy_users SET type = 'ADMIN' WHERE unique_name = 'your_unique_name';
        PASTEFY_GRANT_ACCESS_REQUIRED: false
        OAUTH2_OIDC_CLIENT_ID: ${OAUTH2_OIDC_CLIENT_ID}
        OAUTH2_OIDC_CLIENT_SECRET: ${OAUTH2_OIDC_CLIENT_SECRET}
