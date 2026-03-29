@@ -71,8 +71,7 @@ services:
        # mariadb -u root -p${MYSQL_ROOT_PASSWORD}
        # USE pastefy;
        # DESCRIBE pastefy_users;
-       # SELECT id, name, unique_name, email, type
-       # FROM pastefy_users;
+       # SELECT id, name, unique_name, email, type FROM pastefy_users;
        #
        # The commands above will select the pastefy_users list and show you your currently registered user(s).
        # To actually set your user as admin, you could run the following commands, tho it can be the name or email instead of the unique name as well
