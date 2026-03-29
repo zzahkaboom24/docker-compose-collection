@@ -10,7 +10,9 @@ services:
             - .env
         environment:
             - REWINGED_LISTEN=0.0.0.0:8080
+            # Example: https://login.microsoftonline.com/<Your-Tenant-Id>/v2.0
             - REWINGED_SOURCEAUTHENTRAIDAUTHORITYURL=${REWINGED_SOURCEAUTHENTRAIDAUTHORITYURL}
+            # Example: <Entra-Application-Id>
             - REWINGED_SOURCEAUTHENTRAIDRESOURCE=${REWINGED_SOURCEAUTHENTRAIDRESOURCE}
             - REWINGED_SOURCEAUTHTYPE=microsoftEntraId
         ports:
