@@ -94,7 +94,6 @@ services:
        # USE pastefy;
        # SHOW COLUMNS FROM pastefy_auth_keys;
        # ALTER TABLE pastefy_auth_keys MODIFY COLUMN access_token TEXT;
-       # ALTER TABLE pastefy_auth_keys MODIFY COLUMN refresh_token TEXT;
        # 
        # Pocket ID:
        # mariadb -u root -p${MYSQL_ROOT_PASSWORD}
