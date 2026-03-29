@@ -86,6 +86,24 @@ services:
        OAUTH2_OIDC_AUTH_ENDPOINT: ${OAUTH2_OIDC_AUTH_ENDPOINT}
        OAUTH2_OIDC_TOKEN_ENDPOINT: ${OAUTH2_OIDC_TOKEN_ENDPOINT}
        OAUTH2_OIDC_USERINFO_ENDPOINT: ${OAUTH2_OIDC_USERINFO_ENDPOINT}
+       # Uncomment the following environment variable below, #after# you set up an OIDC service, such as Authentik or Pocket ID
+       # as the access_token is longer than the limit Pastefy currently imposes 'varchar(255)'.
+       #
+       # Authentik:
+       # mariadb -u root -p${MYSQL_ROOT_PASSWORD}
+       # USE pastefy;
+       # SHOW COLUMNS FROM pastefy_auth_keys;
+       # ALTER TABLE pastefy_auth_keys MODIFY COLUMN access_token TEXT;
+       # ALTER TABLE pastefy_auth_keys MODIFY COLUMN refresh_token TEXT;
+       # 
+       # Pocket ID:
+       # mariadb -u root -p${MYSQL_ROOT_PASSWORD}
+       # USE pastefy;
+       # SHOW COLUMNS FROM pastefy_auth_keys;
+       # ALTER TABLE pastefy_auth_keys MODIFY COLUMN access_token TEXT;
+       # ALTER TABLE pastefy_auth_keys MODIFY COLUMN refresh_token TEXT;
+       #
+       # PASTEFY_AUTOMIGRATE: false
        SPRING_PROFILES_ACTIVE: debug
      networks:
        - nginxproxymanager_default
