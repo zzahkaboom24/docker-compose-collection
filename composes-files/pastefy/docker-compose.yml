@@ -65,6 +65,7 @@ services:
        PASTEFY_LOGIN_REQUIRED_CREATE: true
        PASTEFY_LOGIN_REQUIRED_READ: false
        # Change `PASTEFY_GRANT_ACCESS_REQUIRED` to `true` once you logged in with your desired user and set it up as admin.
+       # This sets it so you'd require admin approval for new accounts.
        # To set up your desired user as admin, log in with your desired user first to create it
        # Go in the PastefyMariaDB Docker container and run the following commands
        #
