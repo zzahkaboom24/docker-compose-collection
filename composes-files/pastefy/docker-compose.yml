@@ -68,7 +68,7 @@ services:
        # To set up your desired user as admin, log in with your desired user first to create it
        # Go in the PastefyMariaDB Docker container and run the following commands
        #
-       # mysql -u root -p
+       # mariadb -u root -p${MYSQL_ROOT_PASSWORD}
        # USE pastefy;
        # DESCRIBE pastefy_users;
        # SELECT id, name, unique_name, email, type
