@@ -34,6 +34,7 @@ services:
       - DOMAIN=${DOMAIN}
       - PUID=1000
       - PGID=1000
+      - GUNICORN_CMD_ARGS=--worker-tmp-dir /tmp
       - ENABLE_TRANSCODING=true
       - TRANSCODE_GPU=false
 
