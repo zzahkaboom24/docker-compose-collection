@@ -3,6 +3,8 @@ services:
     image: ghcr.io/lyqht/mini-qr:latest
     container_name: MiniQR
     restart: always
+    environment:
+      - BASE_PATH=/ # URL sub-path for deployment (e.g., /mini-qr for yourdomain.tld/mini-qr) [Default = /]
     ports:
       - 8082:8080
     networks:
