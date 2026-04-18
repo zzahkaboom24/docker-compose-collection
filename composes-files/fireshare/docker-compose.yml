@@ -5,6 +5,8 @@ volumes:
     name: fireshare_processed
   fireshare_videos:
     name: fireshare_videos
+  fireshare_images:
+    name: fireshare_images
 
 services:
   fireshare:
@@ -16,6 +18,7 @@ services:
       - fireshare_data:/data
       - fireshare_processed:/processed
       - fireshare_videos:/videos
+      - fireshare_images:/images
     env_file:
       - .env
     devices:
