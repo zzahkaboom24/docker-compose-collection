@@ -144,7 +144,7 @@ services:
             - 8.8.8.8
             - 8.8.4.4
         volumes:
-            - simplelogin-postfix_data:/etc/postfix
+            - simplelogin-postfix_data:/etc/postfix/custom-data
             - simplelogin-letsencrypt_data:/etc/letsencrypt
         ports:
             - 25:25
