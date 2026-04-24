@@ -20,10 +20,14 @@ services:
       # Use `echo $(xxd -g 2 -l 64 -p /dev/random | tr -d '\n')` in terminal to generate random key and salt
       IMGPROXY_KEY: 21f2ca0a6459f3ce6b87e35874f369443f615645cfef4186ff5f7a36855c84d3428d4179fb82d1ff3e0edfe830933e4e2e79ec0cc6598e35985dd7ee6b16c4fa
       IMGPROXY_SALT: cb874391832eaa552f2af0e1e6897a0d8ec9c6d70f712bf9071a83eab1f8ae48c0b7af62eb5f371b441364a09bd42ddc04a4fa1963d770f5873e10db232a1abe
+      IMGPROXY_TRUSTED_SIGNATURES: MyToken123
       ### Server
       ### See: https://docs.imgproxy.net/configuration/options#server
       IMGPROXY_BIND: ":8080" # Default -> :8080
       IMGPROXY_NETWORK: "tcp" # Default -> tcp
+      ### Security
+      ### See: https://docs.imgproxy.net/configuration/options#security
+      IMGPROXY_ALLOWED_SOURCES: https://s.zzahkaboom24.de/
       ### Image sources
       ### See: https://docs.imgproxy.net/configuration/options#image-sources
       IMGPROXY_LOCAL_FILESYSTEM_ROOT: /home
