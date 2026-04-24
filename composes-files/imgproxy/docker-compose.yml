@@ -26,3 +26,6 @@ services:
       ### See: https://docs.imgproxy.net/configuration/options#log
       IMGPROXY_LOG_LEVEL: "warn"
       IMGPROXY_LOG_FORMAT: "pretty"
+      ### Memory usage tweaks
+      ### See: https://docs.imgproxy.net/configuration/options#memory-usage-tweaks
+      IMGPROXY_MALLOC: malloc # Default -> malloc
