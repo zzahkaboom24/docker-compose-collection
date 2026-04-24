@@ -1,0 +1,28 @@
+volumes:
+  imgproxy_data:
+    name: imgproxy_data
+
+services:
+  imgproxy:
+    restart: always
+    image: ghcr.io/imgproxy/imgproxy:latest
+    container_name: IMGProxy
+    healthcheck:
+      test: [ "CMD", "imgproxy", "health" ]
+      timeout: "10s"
+      interval: "10s"
+      retries: 3
+    volumes:
+      - imgproxy_data:/home
+    environment:
+      ### Server
+      ### See: https://docs.imgproxy.net/configuration/options#server
+      IMGPROXY_BIND: ":8080" # Default -> :8080
+      IMGPROXY_NETWORK: "tcp" # Default -> tcp
+      ### Image sources
+      ### See: https://docs.imgproxy.net/configuration/options#image-sources
+      IMGPROXY_LOCAL_FILESYSTEM_ROOT: /home
+      ### Debug
+      ### See: https://docs.imgproxy.net/configuration/options#log
+      IMGPROXY_LOG_LEVEL: "warn"
+      IMGPROXY_LOG_FORMAT: "pretty"
