@@ -14,5 +14,4 @@ services:
       MEMOS_PORT: 5230
       MEMOS_DRIVER: sqlite
       MEMOS_INSTANCE_URL: https://memos.zzahkaboom24.de
-      # Uncomment the environment variable below to disable sign-ups, after you created your first account
-      # MEMOS_PUBLIC: false
+      # To disable sign-ups, go to Settings -> System -> Enable `Disallow user registration`
