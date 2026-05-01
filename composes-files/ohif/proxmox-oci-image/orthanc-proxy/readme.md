@@ -11,8 +11,13 @@
    server {
        listen 80 default_server;
        location /orthanc/ {
+           set $cors_origin "";
+           if ($http_origin ~* "^(https://ohif.zzahkaboom24.de|http://10.0.1.163|http://10.0.1.162)$") {
+               set $cors_origin $http_origin;
+           }
+           
            if ($request_method = OPTIONS) {
-               add_header Access-Control-Allow-Origin "http://YourOrthancIP:8042" always;
+               add_header Access-Control-Allow-Origin $cors_origin always;
                add_header Access-Control-Allow-Credentials true always;
                add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
                add_header Access-Control-Allow-Headers "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Accept,Accept-Encoding,Origin" always;
@@ -25,12 +30,17 @@
            proxy_pass http://10.0.1.161:8042;
            proxy_set_header Host $host;
            proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+           
            rewrite /orthanc(.*) $1 break;
    
-           add_header Access-Control-Allow-Origin "http://YourOrthancIP:8042" always;
+           add_header Access-Control-Allow-Origin $cors_origin always;
            add_header Access-Control-Allow-Credentials true always;
            add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
            add_header Access-Control-Allow-Headers "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,Accept,Accept-Encoding,Origin" always;
+
+           proxy_redirect off;
        }
    }
    EOF
