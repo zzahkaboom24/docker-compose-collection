@@ -1,5 +1,5 @@
 # Setting up oauth2-proxy container
-1. To get the NGINX container to run, make sure you have a mount point set to:
+1. To get the oauth2-proxy container to run, make sure you have a mount point set to:
    ```
    /etc/oauth2-proxy/
    ```
