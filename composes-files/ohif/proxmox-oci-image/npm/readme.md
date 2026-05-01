@@ -19,7 +19,7 @@ Setting up the reverse proxy [NPM] correctly for OHIF + Orthanc + oauth2-proxy +
      - `Location`: /orthanc/
      - `Scheme`: http
      - `Forward Hostname / IP`: 10.0.1.161
-       - Replace with whatever the IP of the oauth2-proxy container is
+       - Replace with whatever the IP of the OHIF container is
      - `Forward Port`: 8042
      - Click on the `Advanced` button for this specific custom location, and add the following:
        ```
@@ -52,7 +52,7 @@ Setting up the reverse proxy [NPM] correctly for OHIF + Orthanc + oauth2-proxy +
      - `Location`: /orthanc/dicom-web/
      - `Scheme`: http
      - `Forward Hostname / IP`: 10.0.1.161
-       - Replace with whatever the IP of the oauth2-proxy container is
+       - Replace with whatever the IP of the OHIF container is
      - `Forward Port`: 8042
      - Click on the `Advanced` button for this specific custom location, and add the following:
        ```
