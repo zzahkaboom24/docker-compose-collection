@@ -31,8 +31,8 @@ services:
                         sourceName: 'orthanc',
                         configuration: {
                             friendlyName: 'Orthanc DICOMweb',
-                            qidoRoot: 'http://192.168.178.2:8043/orthanc/dicom-web',
-                            wadoRoot: 'http://192.168.178.2:8043/orthanc/dicom-web',
+                            qidoRoot: 'http://YourNGINXIP:8043/orthanc/dicom-web',
+                            wadoRoot: 'http://YourNGINXIP:8043/orthanc/dicom-web',
                             qidoSupportsIncludeField: true,
                             supportsReject: false,
                             imageRendering: 'wadors',
