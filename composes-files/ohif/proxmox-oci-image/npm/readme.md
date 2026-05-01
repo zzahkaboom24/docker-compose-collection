@@ -59,14 +59,7 @@ Setting up the reverse proxy [NPM] correctly for OHIF + Orthanc + oauth2-proxy +
    - `Forward Hostname / IP`: 10.0.1.161
      - Replace with whatever the IP of the OHIF container is
    - `Forward Port`: 8042
-6. In the `Custom Locations` tab, add the following 2 locations:
-   First:
-   - `Location`: /orthanc/
-   - `Scheme`: http
-   - `Forward Hostname / IP`: 10.0.1.162
-     - Replace with whatever the IP of the nginx container is
-   - `Forward Port`: 80
-   Second:
+6. In the `Custom Locations` tab, add the following location:
    - `Location`: /oauth2/
    - `Scheme`: http
    - `Forward Hostname / IP`: 10.0.1.164
