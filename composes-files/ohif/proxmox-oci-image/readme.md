@@ -26,3 +26,4 @@
    - Replace `subvol-10162-disk-1` with the subvolume and disk corresponding to your container pointing to `/etc/nginx/conf.d/`
    - Replace `http://YourOrthancIP:8042` with the IP address of the orthanc container
      - In my case, I would write `http://10.0.1.162:8042`
+4. Start the container now, and it should work.
