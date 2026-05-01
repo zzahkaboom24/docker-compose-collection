@@ -75,7 +75,7 @@ services:
                     proxy_pass http://ohif-orthanc:8042;
                     proxy_set_header Host $host;
                     proxy_set_header X-Real-IP $remote_addr;
-                    rewrite /orthanc(.*) $1 break;
+                    rewrite ^/orthanc/(.*)$ /$1 break;
                     
                     add_header Access-Control-Allow-Origin "https://ohif.zzahkaboom24.de" always;
                     add_header Access-Control-Allow-Credentials true always;
