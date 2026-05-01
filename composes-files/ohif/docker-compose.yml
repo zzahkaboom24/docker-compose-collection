@@ -7,6 +7,8 @@ volumes:
         name: orthanc_data
     orthanc-index:
         name: orthanc-index
+    oauth2-proxy_data:
+        name: oauth2-proxy_data
 
 services:
     ohif:
@@ -109,6 +111,17 @@ services:
             - orthanc-index:/var/lib/postgresql/data
         environment:
             POSTGRES_HOST_AUTH_METHOD: "trust"
+        networks:
+            - nginxproxymanager_default
+    oauth2-proxy:
+        image: quay.io/oauth2-proxy/oauth2-proxy:v7.15.2
+        container_name: OpenHealthImagingFoundationOAuth2Proxy
+        restart: always
+        ports:
+            - 4180:4180
+        command: --config /etc/oauth2-proxy/oauth2-proxy.cfg
+        volumes:
+            - oauth2-proxy_data:/etc/oauth2-proxy/
         networks:
             - nginxproxymanager_default
 
