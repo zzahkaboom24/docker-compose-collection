@@ -15,12 +15,14 @@
    client_id = "PASTE-FROM-POCKET-ID"
    client_secret = "PASTE-FROM-POCKET-ID"
 
+   # Replace .zzahkaboom24.de with your actual root domain
    # Use `openssl rand -base64 32 | tr -- '+/' '-_' | head -c 32` in terminal to generate the 32 character random secret
    cookie_domains = [".zzahkaboom24.de"]
    cookie_secure = true
    cookie_secret = "GENERATE-A-32-BYTE-RANDOM-STRING"
    cookie_expire = "168h"
 
+   # Replace .zzahkaboom24.de with your actual root domain
    # Replace https://ohif.yourdomain.tld/oauth2/callback with your actual OHIF URL
    whitelist_domains = [".zzahkaboom24.de"]
    redirect_url = "https://ohif.yourdomain.tld/oauth2/callback"
