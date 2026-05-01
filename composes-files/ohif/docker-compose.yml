@@ -31,10 +31,10 @@ services:
                         sourceName: 'orthanc',
                         configuration: {
                             friendlyName: 'Orthanc DICOMweb',
-                            qidoRoot: 'http://YourNGINXIP:8043/orthanc/dicom-web',
-                            wadoRoot: 'http://YourNGINXIP:8043/orthanc/dicom-web',
+                            qidoRoot: '/orthanc/dicom-web',
+                            wadoRoot: '/orthanc/dicom-web',
+                            wadoUriRoot: '/orthanc/dicom-web',
                             qidoSupportsIncludeField: true,
-                            supportsReject: false,
                             imageRendering: 'wadors',
                             thumbnailRendering: 'wadors',
                             enableStudyLazyLoad: true,
