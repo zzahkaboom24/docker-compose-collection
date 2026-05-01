@@ -3,8 +3,8 @@
 
 | Status | Service | Website | Update | Maintainer |
 |:--:|--|--|--|--|
-| ✅ | <img src="https://img.papamica.com/logo/adminer.png" alt="adminer" width="20"/> [npm](https://github.com/zzahkaboom24/docker-compose-collection/blob/master/composes-files/nginx-proxy-manager/docker-compose.yml) | [nginxproxymanager.com](https://nginxproxymanager.com/) | 28-01-2026 | zzahkaboom24 |
-| ✅ | <img src="https://img.papamica.com/logo/adminer.png" alt="adminer" width="20"/> [simplelogin](https://github.com/zzahkaboom24/docker-compose-collection/blob/master/composes-files/simplelogin/docker-compose.yml) | [simplelogin.io](https://simplelogin.io/) | 28-01-2026 | zzahkaboom24 |
+| ✅ | <img src="https://s.zzahkaboom24.de/raw/WiQhgj.png" alt="npm" width="20"/> [npm](https://github.com/zzahkaboom24/docker-compose-collection/blob/master/composes-files/nginx-proxy-manager/docker-compose.yml) | [nginxproxymanager.com](https://nginxproxymanager.com/) | 28-01-2026 | zzahkaboom24 |
+| ✅ | <img src="https://s.zzahkaboom24.de/raw/1ygcmF.png" alt="simplelogin" width="20"/> [simplelogin](https://github.com/zzahkaboom24/docker-compose-collection/blob/master/composes-files/simplelogin/docker-compose.yml) | [simplelogin.io](https://simplelogin.io/) | 28-01-2026 | zzahkaboom24 |
 </div>
 
 ---
