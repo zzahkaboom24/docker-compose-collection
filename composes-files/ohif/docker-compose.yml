@@ -101,7 +101,7 @@ services:
             DICOM_WEB_PLUGIN_ENABLED: "true"
             ORTHANC__DICOM_WEB__PUBLIC_ROOT: "https://ohif.zzahkaboom24.de/orthanc/dicom-web/"
             ORTHANC__ORTHANC_EXPLORER_2__UI_OPTIONS__ENABLE_OPEN_IN_OHIF_VIEWER_3: "true"
-            ORTHANC__ORTHANC_EXPLORER_2__UI_OPTIONS__OHIF_VIEWER_3_PUBLIC_ROOT: "https://ohif.zzahkaboom24.de"
+            ORTHANC__ORTHANC_EXPLORER_2__UI_OPTIONS__OHIF_VIEWER_3_PUBLIC_ROOT: "https://ohif.zzahkaboom24.de/"
             ORTHANC__AUTHENTICATION_ENABLED: "false"
             ORTHANC__POSTGRESQL: '{"Host": "orthanc-index"}'
             VERBOSE_STARTUP: "true"
