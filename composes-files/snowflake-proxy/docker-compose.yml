@@ -1,7 +1,7 @@
 services:
     snowflake-proxy:
         network_mode: host
-        image: containers.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake:latest
+        image: thetorproject/snowflake-proxy:latest
         container_name: SnowflakeProxy
         restart: always
         # For a full list of Snowflake Proxy CLI parameters see
