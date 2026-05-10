@@ -1,0 +1,9 @@
+services:
+    snowflake-proxy:
+        network_mode: host
+        image: containers.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake:latest
+        container_name: SnowflakeProxy
+        restart: always
+        # For a full list of Snowflake Proxy CLI parameters see
+        # https://gitlab.torproject.org/tpo/anti-censorship/pluggable-transports/snowflake/-/tree/main/proxy?ref_type=heads#running-a-standalone-snowflake-proxy
+        command: [ "-ephemeral-ports-range", "30000:60000" ]
