@@ -107,6 +107,7 @@ services:
       DB_PASSWORD: *db-password
       APP_ENV: "production"
       APP_ENVIRONMENT_ONLY: "false"
+      APP_KEY: "base64:IV9pPyZczaDfx7BMNOK6dmvBBoLCopcSldPHCyS3oLM="
       CACHE_DRIVER: "redis"
       SESSION_DRIVER: "redis"
       QUEUE_DRIVER: "redis"
