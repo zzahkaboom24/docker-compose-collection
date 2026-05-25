@@ -1,0 +1,10 @@
+volumes:
+  mcxboxbroadcast_data:
+    name: mcxboxbroadcast_data
+
+services:
+    mcxboxbroadcast:
+        image: ghcr.io/mcxboxbroadcast/standalone:latest
+        container_name: MCXboxBroadcast
+        volumes:
+            - mcxboxbroadcast_data:/opt/app/config
