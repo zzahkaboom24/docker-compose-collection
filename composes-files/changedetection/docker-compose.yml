@@ -1,0 +1,13 @@
+volumes:
+  changedetection_data:
+    name: changedetection_data
+
+services:
+    changedetection:
+        container_name: ChangeDetection
+        image: ghcr.io/dgtlmoon/changedetection.io:latest
+        restart: always
+        ports:
+            - 127.0.0.1:5000:5000
+        volumes:
+            - changedetection_data:/datastore
