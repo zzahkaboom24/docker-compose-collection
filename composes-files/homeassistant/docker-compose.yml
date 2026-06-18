@@ -1,0 +1,17 @@
+volumes:
+  homeassistant-config_data:
+    name: homeassistant-config_data
+
+services:
+    home-assistant:
+        container_name: HomeAssistant
+        image: ghcr.io/home-assistant/home-assistant:stable
+        privileged: true
+        restart: always
+        ports:
+            - 8123:8123
+        environment:
+            - TZ=Europe/Berlin
+        volumes:
+            - homeassistant-config_data:/config
+            - /run/dbus:/run/dbus:ro
