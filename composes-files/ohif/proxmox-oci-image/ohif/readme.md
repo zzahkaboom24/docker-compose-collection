@@ -11,7 +11,9 @@
    PHASE="$2"
    
    if [ "$PHASE" = "pre-start" ]; then
-       setcap 'cap_net_bind_service=+ep' "/rpool/data/subvol-${CTID}-disk-0/usr/sbin/nginx" || true
+       # The root disk could change with every update (disk-0, disk-4, ...), so this looks it up
+       vol=$(sed -n 's/^rootfs: *//p' "/etc/pve/lxc/${CTID}.conf" | cut -d, -f1)
+       setcap 'cap_net_bind_service=+ep' "$(pvesm path "$vol")/usr/sbin/nginx" || true
    fi
    EOF
    ```
